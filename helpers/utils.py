@@ -10,5 +10,5 @@ def create_log(message):
         log_file.write(f"{current_date} - {message}\n")
 
 def remove_image(filepath):
-    if os.path.exists(filepath):
+    if os.path.isfile(filepath) and os.path.exists(filepath):
         os.remove(filepath)
