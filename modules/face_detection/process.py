@@ -30,7 +30,7 @@ def liveness(filepath):
                 "scale": scale,
                 "out_w": w_input,
                 "out_h": h_input,
-                "crop": True,
+                "crop": False,
             }
             if scale is None:
                 param["crop"] = False
