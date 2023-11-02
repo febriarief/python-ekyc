@@ -9,7 +9,7 @@ def compress_image(base64_image):
 
     try:
         random_string = str(uuid.uuid4())
-        compressed_filename = random_string + "-COMPRESSED.jpg"
+        compressed_filename = random_string + "-COMPRESSED.png"
         compressed_filepath = "{}/{}".format(compressed_image_path, compressed_filename)
     
         img = Image.open(io.BytesIO(base64.decodebytes(bytes(base64_image, 'utf-8'))))
