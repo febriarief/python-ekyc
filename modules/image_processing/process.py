@@ -15,8 +15,8 @@ def compress_image(base64_image):
         img = Image.open(io.BytesIO(base64.decodebytes(bytes(base64_image, 'utf-8'))))
         img = auto_rotate_image(img)
 
-        width = int(img.width * (200 / img.height))
-        img.thumbnail((width, 200), Image.ANTIALIAS)
+        width = int(img.width * (300 / img.height))
+        img.thumbnail((width, 300), Image.ANTIALIAS)
         img.save(compressed_filepath)
 
         return { "status": 200, "filename": compressed_filename, "filepath": compressed_filepath }
