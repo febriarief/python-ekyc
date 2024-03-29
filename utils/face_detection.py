@@ -54,7 +54,7 @@ class FaceDetection:
                 - image: Image with detected face.
         """
 
-        img = self.resize_with_pad(img)
+        # img = self.resize_with_pad(img)
         img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
 
         blob = cv2.dnn.blobFromImage(img, 1, mean=(104, 117, 123))
