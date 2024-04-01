@@ -1,26 +1,46 @@
+from utils.config import get_config
 from utils.face_detection import FaceDetection
-from utils.image_util import variance_of_laplacian
-from src.anti_spoof.anti_spoof import AntiSpoof, CropImage, parse_model_name
-import cv2, numpy as np, os, time
+from utils.image_util import resize, variance_of_laplacian
+from resources.anti_spoof.anti_spoof import AntiSpoof, CropImage, parse_model_name
+import argparse, cv2, numpy as np, os, sys, time
 
 
-MODEL_DIR = './resources/spoof_detection_models'
+MODEL_DIR = './resources/models/spoof_detection_models'
 
 
 if __name__ == '__main__':
+    desc = 'Face liveness detection'
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('--filename', type=str, default=None, help='image used to test')
+    args = parser.parse_args()
+
+    if args.filename is None:
+        print('Please provide args --filename')
+        sys.exit()
+
     start_time = time.time()
 
-    filename = 'moa-kikuchi.jpg'
+    filename = args.filename
     filepath = os.path.join('sample', filename)
     img = cv2.imread(filepath)
+
+    height, width = img.shape[0], img.shape[1]
+    if width / height != 3/4:
+        print('Image aspect ratio is not 3:4')
+        sys.exit()
+
+    conf = get_config()
+    max_height = conf.face_detection_size
+    if height > max_height:
+        img = resize(img)
     
     face_detection = FaceDetection()
-    detect_face = face_detection.auto_rotate_image(img)
+    detect_face = face_detection.detect_face_align(img)
 
     if detect_face['is_face_available'] is False:
         print('Face is not available')
         img = detect_face['image']
-        cv2.putText(img, 'Face not detected', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.putText(img, 'Face not detected', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
     else:
         print('Face detected')
         
@@ -52,15 +72,15 @@ if __name__ == '__main__':
         value = prediction[0][label]/2
         if label == 1:
             print("Image '{}' is Real Face. \nScore: {:.2f}.".format(filename, value))
-            result_text = "RealFace Score: {:.2f}".format(value)
+            result_text = "Real Face Score: {:.2f}".format(value)
             color = (255, 0, 0)
         else:
             print("Image '{}' is Fake Face. \nScore: {:.2f}.".format(filename, value))
-            result_text = "FakeFace Score: {:.2f}".format(value)
+            result_text = "Fake Face Score: {:.2f}".format(value)
             color = (0, 0, 255)
 
         cv2.rectangle(img, (bounding_box[0], bounding_box[1]), (bounding_box[0] + bounding_box[2], bounding_box[1] + bounding_box[3]), color, 2)
-        cv2.putText(img, result_text, (bounding_box[0], bounding_box[1] - 5), cv2.FONT_HERSHEY_COMPLEX, 0.5 * img.shape[0] / 1024, color)
+        cv2.putText(img, result_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
 
     output_filename = os.path.basename(filepath).split('.')[0] + '-output.jpg'
     output_filepath = os.path.join('sample', output_filename)
